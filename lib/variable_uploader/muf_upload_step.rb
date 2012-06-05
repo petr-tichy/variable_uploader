@@ -73,10 +73,14 @@ module GoodData
 
         sf_data = []
 
-        FasterCSV.foreach(file, :headers => true, :return_headers => false) do |row|
-          # sf_data << row.values_at('user', 'Id', 'Good_Data_Access__c', 'Sales_Region__c', 'Sales_Market__c', 'Sales_Team__c', 'Sales_Mgr_Rptn__c', 'Sales_Terr__c')
-          #Id,Sales_Region__c,Sales_Market__c,Sales_Team__c,Sales_Mgr_Rptn__c,Sales_Terr__c,user
-          sf_data << row.to_hash
+        FasterCSV.foreach(file, :headers => true, :return_headers => true) do |row|
+          if row.header_row?
+            (csv_headers + [id_field]).each do |header|
+              fail "There is no field #{header} in the file #{file}" unless row.fields.include?(header)
+            end
+          else
+            sf_data << row.to_hash
+          end
         end
         # binding.pry
 
