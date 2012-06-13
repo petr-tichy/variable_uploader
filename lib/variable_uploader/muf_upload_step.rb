@@ -23,8 +23,8 @@ module GoodData
       def create_expression(values, attr_uri, elements, user)
         # 
         reduced_values = values.inject([]) do |memo, v|
-          if elements.has_key?(v.to_s)
-            memo << elements[v.to_s]
+          if elements.has_key?(v) && v != "TRUE"
+            memo << elements[v]
           else
             puts "#{v} not found for #{user}" 
           end
