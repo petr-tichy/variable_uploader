@@ -21,7 +21,6 @@ module GoodData
       end
 
       def create_expression(values, attr_uri, elements, user)
-        # 
         reduced_values = values.inject([]) do |memo, v|
           if elements.has_key?(v) && v != "TRUE"
             memo << elements[v]
@@ -67,7 +66,10 @@ module GoodData
       end
 
       def run(logger_param, project)
-        
+
+        users_muf_value_filename = "users_muf_value_#{PID}.json"
+        users_muf_filename       = "users_muf.json_#{PID}"
+
         csv_headers = config.collect {|i| i[:csv_header]}
         config.each {|i| i[:elements] = build_elements_dictionary(i[:label_uri])}
 
@@ -82,7 +84,6 @@ module GoodData
             sf_data << row.to_hash
           end
         end
-        # binding.pry
 
         puts "Getting users"
         users_in_gd = {}
@@ -91,10 +92,10 @@ module GoodData
         end
 
         # Which user has which filter so I do not need to grab them every time
-        users_muf = File.exist?('users_muf.json') ? JSON.parse(File.open('users_muf.json').read) : {}
+        users_muf = File.exist?(users_muf_filename) ? JSON.parse(File.open(users_muf_filename).read) : {}
 
         # Which user has which value of filter so I can compare if it changed
-        users_muf_value = File.exist?('users_muf_value.json') ? JSON.parse(File.open('users_muf_value.json').read) : {}
+        users_muf_value = File.exist?(users_muf_value_filename) ? JSON.parse(File.open(users_muf_value_filename).read) : {}
 
         count = 0
         
@@ -114,7 +115,6 @@ module GoodData
 
           # Create a place for a user if this is the first time we see it
           accumulated_data[email] = {} unless accumulated_data.has_key?(email)
-
           expression_bits = config.each do |c|
             header = c[:csv_header]
             if accumulated_data[email].has_key?(header) then
@@ -122,13 +122,10 @@ module GoodData
             else
               accumulated_data[email][header] = [row[header]]
             end
-            # accumulated_data[email]
-            # create_expression(row[c[:csv_header]], c[:attribute], c[:elements], row)
           end
           
         end
         
-        pp accumulated_data
         accumulated_data.each do |email, data|
         
           # email = row[id_field]
@@ -144,8 +141,8 @@ module GoodData
             expression_bits = config.map do |c|
               create_expression(data[c[:csv_header]], c[:attribute], c[:elements], email)
             end
-            expression = expression_bits.join(" AND ")
-            puts expression
+            expression = expression_bits.reduce([]) {|memo, bit| memo << bit unless memo.include?(bit); memo }.join(" AND ")
+            puts "#{email} => #{expression}"
             if muf_uri.nil?
               puts "create a filter for user #{email} and assign. Mark his uri for future reference"
               result = GoodData.post("/gdc/md/#{project.obj_id}/obj", create_filter_json("filter for #{email}", expression))
@@ -167,11 +164,11 @@ module GoodData
         end
 
         # Serialize muf_values
-        File.open('users_muf_value.json', 'w') do |f|
+        File.open(users_muf_value_filename, 'w') do |f|
           f.write JSON.pretty_generate(users_muf_value)
         end
 
-        File.open('users_muf.json', 'w') do |f|
+        File.open(users_muf_filename, 'w') do |f|
           f.write JSON.pretty_generate(users_muf)
         end
       end
