@@ -3,13 +3,15 @@ module GoodData
 
     class MufStep < Step
 
-      attr_accessor :config, :file, :id_field
+      attr_accessor :config, :file, :id_field, :cache_token
 
       def initialize(options={})
         puts "initialize"
         @config = options[:config]
         @file = options[:file]
         @id_field = options[:id_field]
+        @cache_token = options[:cache_token]
+
       end
 
       def build_elements_dictionary(uri)
@@ -67,8 +69,8 @@ module GoodData
 
       def run(logger_param, project)
 
-        users_muf_value_filename = "users_muf_value_#{PID}.json"
-        users_muf_filename       = "users_muf.json_#{PID}"
+        users_muf_value_filename = cache_token.nil? ? "users_muf_value.json" : "users_muf_value_#{cache_token}.json"
+        users_muf_filename       = cache_token.nil? ? "users_muf.json" : "users_muf_#{cache_token}.json"
 
         csv_headers = config.collect {|i| i[:csv_header]}
         config.each {|i| i[:elements] = build_elements_dictionary(i[:label_uri])}
