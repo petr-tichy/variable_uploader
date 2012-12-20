@@ -11,7 +11,7 @@ module GoodData
         @file = options[:file]
         @id_field = options[:id_field]
         @cache_token = options[:cache_token]
-
+        @users_data = options[:users_data]
       end
 
       def build_elements_dictionary(uri)
@@ -67,6 +67,18 @@ module GoodData
         GoodData.post "/gdc/md/#{project.obj_id}/userfilters", user_filter
       end
 
+      
+      def create_users_lookup(project)
+        users_lookup = {}
+        data = @users_data.nil?() ? GoodData.get("#{project.uri}/users") : @users_data
+        data["users"].each do |user|
+          user = user["user"]
+          users_lookup[user["content"]["email"]] = user["links"]["self"]
+        end
+        users_lookup
+      end
+      
+      
       def run(logger_param, project)
 
         users_muf_value_filename = cache_token.nil? ? "users_muf_value.json" : "users_muf_value_#{cache_token}.json"
@@ -88,10 +100,11 @@ module GoodData
         end
 
         puts "Getting users"
-        users_in_gd = {}
-        GoodData.get("/gdc/projects/#{project.obj_id}/users")["users"].each do |user|
-          users_in_gd[user["user"]["content"]["email"]] = user["user"]["links"]["self"]
-        end
+        users_in_gd = create_users_lookup(project)
+
+#         GoodData.get("/gdc/projects/#{project.obj_id}/users")["users"].each do |user|
+#           users_in_gd[user["user"]["content"]["email"]] = user["user"]["links"]["self"]
+#         end
 
         # Which user has which filter so I do not need to grab them every time
         users_muf = File.exist?(users_muf_filename) ? JSON.parse(File.open(users_muf_filename).read) : {}
