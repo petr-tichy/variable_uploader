@@ -156,6 +156,9 @@ module GoodData
       end
 
       def gather_updates(project, variable, expressions_by_user)
+        
+        @logger.info("Testing")
+        
         search = GoodData::post("/gdc/md/#{project.obj_id}/variables/search", {"variablesSearch" => {
           "variables" => [variable.uri],
           "context" => []
@@ -163,8 +166,15 @@ module GoodData
         
         current_expressions_by_user = {}
         search["variables"].each do |var|
+          if (var["expression"] == "TRUE")
+            values = []
+          else 
+            list = var["tree"]["content"] .find {|content| content["type"] == "list"}
+            values = list["content"].collect {|obj| obj["value"]}
+          end
+
           current_expressions_by_user[var["related"]] = {
-            :values => var['objects'].find_all {|obj| obj["category"] == "attributeElement"}.collect {|obj| obj["uri"]},
+            :values => values,
             :expression => var["expression"],
             :uri => var["uri"],
             :type => var["tree"]["type"]
