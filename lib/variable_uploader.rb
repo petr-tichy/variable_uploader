@@ -1,4 +1,10 @@
-require 'fastercsv'
+if RUBY_VERSION =~ /1.9/
+  require 'fastercsv'
+  CSV = FasterCSV
+else
+  require 'csv'
+end
+
 require 'gooddata'
 require 'pp'
 require 'logger'
