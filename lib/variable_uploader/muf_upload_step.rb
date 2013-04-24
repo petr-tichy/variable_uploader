@@ -108,10 +108,23 @@ module GoodData
 
         # Which user has which filter so I do not need to grab them every time
         users_muf = File.exist?(users_muf_filename) ? JSON.parse(File.open(users_muf_filename).read) : {}
+        
+        users_muf_temp = {}
+        users_muf.each do |key,value|
+          users_muf_temp[key.downcase] = value
+        end
+        users_muf = users_muf_temp
 
         # Which user has which value of filter so I can compare if it changed
         users_muf_value = File.exist?(users_muf_value_filename) ? JSON.parse(File.open(users_muf_value_filename).read) : {}
 
+        users_muf_value_temp = {}
+        users_muf_value.each do |key,value|
+          users_muf_value_temp[key.downcase] = value
+        end
+        users_muf_value = users_muf_value_temp
+        
+        
         count = 0
         
         # Since users can eventually have more than one value for an attribute we first need to preprocess the data. The format tha should facilitate this should be row oriented
