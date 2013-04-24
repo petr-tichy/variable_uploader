@@ -1,4 +1,4 @@
-if RUBY_VERSION =~ /1.9/
+unless RUBY_VERSION =~ /1.9/
   require 'fastercsv'
   CSV = FasterCSV
 else
