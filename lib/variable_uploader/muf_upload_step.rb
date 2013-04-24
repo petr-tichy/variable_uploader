@@ -90,6 +90,7 @@ module GoodData
         sf_data = []
 
         CSV.foreach(file, :headers => true, :return_headers => true) do |row|
+          
           if row.header_row?
             (csv_headers + [id_field]).each do |header|
               fail "There is no field #{header} in the file #{file}" unless row.fields.include?(header)
