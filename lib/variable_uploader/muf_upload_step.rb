@@ -73,7 +73,7 @@ module GoodData
         data = @users_data.nil?() ? GoodData.get("#{project.uri}/users") : @users_data
         data["users"].each do |user|
           user = user["user"]
-          users_lookup[user["content"]["email"]] = user["links"]["self"]
+          users_lookup[user["content"]["email"].downcase] = user["links"]["self"]
         end
         users_lookup
       end
@@ -123,7 +123,7 @@ module GoodData
 
         accumulated_data = {}
         sf_data.each do |row|
-          email = row[id_field]
+          email = row[id_field].downcase
           is_in_gd = users_in_gd[email] != nil
           puts "#{email} not in gooddata" unless is_in_gd
           next unless is_in_gd
