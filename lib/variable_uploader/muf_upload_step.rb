@@ -110,19 +110,25 @@ module GoodData
         users_muf = File.exist?(users_muf_filename) ? JSON.parse(File.open(users_muf_filename).read) : {}
         
         users_muf_temp = {}
-        users_muf.each do |key,value|
-          users_muf_temp[key.downcase] = value
+        
+        if (users_muf.respond_to?("each")) then 
+          users_muf.each do |key,value|
+            users_muf_temp[key.downcase] = value
+          end
+          users_muf = users_muf_temp
         end
-        users_muf = users_muf_temp
 
         # Which user has which value of filter so I can compare if it changed
         users_muf_value = File.exist?(users_muf_value_filename) ? JSON.parse(File.open(users_muf_value_filename).read) : {}
 
-        users_muf_value_temp = {}
-        users_muf_value.each do |key,value|
-          users_muf_value_temp[key.downcase] = value
+        
+        if (users_muf_value.respond_to?("each")) then 
+          users_muf_value_temp = {}
+          users_muf_value.each do |key,value|
+            users_muf_value_temp[key.downcase] = value
+          end
+          users_muf_value = users_muf_value_temp
         end
-        users_muf_value = users_muf_value_temp
         
         
         count = 0
