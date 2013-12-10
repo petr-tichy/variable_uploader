@@ -23,10 +23,9 @@ module GoodData
         def run
           # GoodData.logger = Logger.new(STDOUT)
           GoodData.connect(@login, @password, @server, {
-            :timeout => 0
+            :timeout => 30
           })
           p = GoodData.use(@pid)
-
           logger = Logger.new('variable_uploader.log', 10, 1024000)
 
           steps.each do |step|
