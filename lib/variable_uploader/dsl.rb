@@ -16,20 +16,24 @@ module GoodData
           @pid = options[:pid]
           @steps = []
           @server = options[:server]
+          @sst_token = options[:sst_token]
+          @logger = options[:logger] || Logger.new 'variable_uploader.log', 10, 102400
           instance_eval(&block)
           run
         end
 
         def run
           # GoodData.logger = Logger.new(STDOUT)
-          GoodData.connect(@login, @password, @server, {
-            :timeout => 30
-          })
+          if @sst_token.nil?
+            GoodData.connect login: @login, password: @password, server: @server, timeout: 30
+          else
+            GoodData.connect sst_token: @sst_token, server: @server, timeout: 30
+          end
+
           p = GoodData.use(@pid)
-          logger = Logger.new('variable_uploader.log', 10, 1024000)
 
           steps.each do |step|
-            step.run(logger, p)
+            step.run(@logger, p)
           end
         end
 
