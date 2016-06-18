@@ -65,10 +65,20 @@ module GoodData
         updated.each do |update|
           GoodData.delete(update[:uri])
         end
-    
-        data_to_send.each_slice(100) do |slice|
+
+        data_to_send.slice_before(slice: []) {|item, state|
+          slice = state[:slice] + [item]
+          if slice.to_s.length < 1_000_000
+            state[:slice] = slice
+            false
+          else
+            state[:slice] = [item]
+            true
+          end
+        }.each {|slice|
           GoodData.post("/gdc/md/#{project.obj_id}/variables/user", ({:variables => slice}))
-        end
+        }
+
       end
 
       private
